@@ -1,7 +1,8 @@
+use crate::client::Client;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
-use std::thread::sleep;
-use std::time::Duration;
+// use std::thread::sleep;
+// use std::time::Duration;
 
 #[derive(Debug)]
 pub struct BitMap {
@@ -11,12 +12,14 @@ pub struct BitMap {
 #[derive(Debug)]
 pub struct Inner {
     values: HashMap<String, Vec<u8>>,
+    clients: HashMap<usize, Client>,
 }
 
 impl Inner {
     fn new() -> Self {
         Self {
             values: HashMap::new(),
+            clients: HashMap::new(),
         }
     }
 }

@@ -6,19 +6,24 @@ use std::thread;
 // use std::thread::sleep;
 // use std::time::Duration;
 
+mod client;
 mod core;
 mod message;
 
 fn main() {
     let bitmap = core::BitMap::new();
 
+    let address = "0.0.0.0:3666";
     // 保持连接状态
-    let listener = TcpListener::bind("0.0.0.0:3666").unwrap();
+    let listener = TcpListener::bind(address).unwrap();
 
+    println!("process.id {:#?} listener {}", std::process::id(), address);
     for connect in listener.incoming() {
         if let Ok(mut stream) = connect {
             let mut bitmap = bitmap.clone();
             thread::spawn(move || {
+                println!("new connect {:?}", stream.peer_addr().unwrap());
+                stream.write("hello bitmap server\n".as_bytes()).unwrap();
                 let mut buffer = [0; 1];
                 let mut content = String::new();
 
@@ -41,7 +46,7 @@ fn main() {
                                     Message::GetBit { key, offset } => {
                                         let value = bitmap.get(key.clone(), offset.clone());
                                         let resp = value.to_string();
-                                        stream.write(resp.as_bytes()).unwrap();
+                                        stream.write(format!("{}\n", resp).as_bytes()).unwrap();
 
                                         println!(
                                             "getbit {:#?} {} value={:#?}\n",
