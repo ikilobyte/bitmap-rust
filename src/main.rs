@@ -1,20 +1,16 @@
 use crate::message::Message;
 use std::io::{Read, Write};
 use std::net::TcpListener;
-use std::sync::{Arc, Mutex};
+// use std::sync::{Arc, Mutex};
 use std::thread;
-use std::thread::sleep;
-use std::time::Duration;
+// use std::thread::sleep;
+// use std::time::Duration;
 
 mod core;
 mod message;
 
 fn main() {
-    let mut bitmap = core::BitMap::new();
-
-    bitmap.set("xxx".to_string(), 3, 1);
-
-    sleep(Duration::from_secs(3600));
+    let bitmap = core::BitMap::new();
 
     // 保持连接状态
     let listener = TcpListener::bind("0.0.0.0:3666").unwrap();
@@ -28,10 +24,13 @@ fn main() {
 
                 loop {
                     match stream.read(&mut buffer) {
-                        Ok(size) => {
+                        Ok(_) => {
                             // 读取完毕一个完整的包
                             if buffer[0] == 10 {
                                 let cmd = content.clone();
+
+                                // 清空
+                                content = "".to_string();
 
                                 match Message::parse(cmd.clone()) {
                                     Message::SetBit { key, offset, value } => {
@@ -58,7 +57,8 @@ fn main() {
                                     }
                                 }
 
-                                break;
+                                // 就不退出了!
+                                // break;
                             } else {
                                 content.push_str(&String::from_utf8_lossy(&buffer));
                             }

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::error::Error;
+// use std::error::Error;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 #[derive(Debug)]
@@ -35,50 +35,52 @@ impl BitMap {
     // 设置bit位
     pub fn set(&mut self, key: String, offset: usize, value: u8) -> usize {
         // 获得锁
-        let mut inner = self.inner();
+        // let mut inner = self.inner();
 
-        println!("{:#?}", inner.values);
-
+        // println!("{:#?}", inner.values);
+        //
+        // if let Some(x) = inner.values.get(&key) {
+        //     println!("{:#?}", x);
+        // } else {
+        //     println!("{:#?}", "????");
+        // }
         // 获取到这个key对应的db，也就是这个key的所有字节
         let mut db = self.get_storage(&key).unwrap();
 
-        1
         // // 这个offset是在db中的第几个下标
-        // let index = self.get_index_by_offset(offset);
-        //
-        // // 补齐数据
-        // while (offset / 8) > db.len() {
-        //     db.push(0);
-        // }
-        //
-        // // 获取当前下标的数据
-        // if let None = db.get(index) {
-        //     db.push(0);
-        // }
-        //
-        // let byte = db.get(index).unwrap().clone();
-        //
-        // // 1byte有8bit，下标从0 ~ 7，一共8个位置
-        // let bit_offset = offset % 8;
-        //
-        // // 设置状态
-        // let number: u8;
-        //
-        // if value == 1 {
-        //     number = byte | (1 << bit_offset);
-        // } else {
-        //     number = byte & !(1 << bit_offset);
-        // }
-        //
-        // // 保存数据
-        // db[index] = number;
-        //
-        // // 保存数据
-        // inner.values.insert(key, db.clone());
-        //
-        // db.len()
+        let index = self.get_index_by_offset(offset);
 
-        // 释放锁
+        // // 补齐数据
+        while (offset / 8) > db.len() {
+            db.push(0);
+        }
+
+        // 获取当前下标的数据
+        if let None = db.get(index) {
+            db.push(0);
+        }
+
+        let byte = db.get(index).unwrap().clone();
+
+        // 1byte有8bit，下标从0 ~ 7，一共8个位置
+        let bit_offset = offset % 8;
+        //
+        // 设置状态
+        let number: u8;
+
+        if value == 1 {
+            number = byte | (1 << bit_offset);
+        } else {
+            number = byte & !(1 << bit_offset);
+        }
+
+        // 保存数据
+        db[index] = number;
+
+        // 保存数据
+        self.inner().values.insert(key, db.clone());
+
+        db.len()
     }
 
     // 获取当前offset是在第几个位置
