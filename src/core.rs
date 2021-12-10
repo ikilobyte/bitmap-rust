@@ -1,6 +1,7 @@
 use std::collections::HashMap;
-// use std::error::Error;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::thread::sleep;
+use std::time::Duration;
 
 #[derive(Debug)]
 pub struct BitMap {
@@ -34,16 +35,6 @@ impl BitMap {
 
     // 设置bit位
     pub fn set(&mut self, key: String, offset: usize, value: u8) -> usize {
-        // 获得锁
-        // let mut inner = self.inner();
-
-        // println!("{:#?}", inner.values);
-        //
-        // if let Some(x) = inner.values.get(&key) {
-        //     println!("{:#?}", x);
-        // } else {
-        //     println!("{:#?}", "????");
-        // }
         // 获取到这个key对应的db，也就是这个key的所有字节
         let mut db = self.get_storage(&key).unwrap();
 

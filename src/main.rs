@@ -34,17 +34,19 @@ fn main() {
 
                                 match Message::parse(cmd.clone()) {
                                     Message::SetBit { key, offset, value } => {
-                                        println!("{:#?}", "开始setbit");
-                                        let size = bitmap.set(key, offset, value);
-                                        println!("{:#?}", size);
-                                        stream.write("Ok\n".as_bytes()).unwrap();
+                                        bitmap.set(key, offset, value);
+                                        stream.write("OK\n".as_bytes()).unwrap();
+                                        println!("{:#?}", bitmap);
                                     }
                                     Message::GetBit { key, offset } => {
                                         let value = bitmap.get(key.clone(), offset.clone());
-                                        let resp = value.to_string() + "\n";
+                                        let resp = value.to_string();
                                         stream.write(resp.as_bytes()).unwrap();
 
-                                        println!("getbit {:#?} {} value={:#?}", key, offset, resp);
+                                        println!(
+                                            "getbit {:#?} {} value={:#?}\n",
+                                            key, offset, resp
+                                        );
                                     }
                                     Message::UnSupport => {
                                         stream
