@@ -30,6 +30,11 @@ fn main() {
                 loop {
                     match stream.read(&mut buffer) {
                         Ok(_) => {
+                            if buffer[0] == 0 {
+                                println!("client is close!");
+                                break;
+                                // 用户关闭了连接
+                            }
                             // 读取完毕一个完整的包
                             if buffer[0] == 10 {
                                 let cmd = content.clone();
@@ -59,6 +64,7 @@ fn main() {
                                             .unwrap();
                                     }
                                     Message::Error(mut error) => {
+                                        println!("{:#?}",error );
                                         error.push_str("\n");
                                         stream.write(error.as_bytes()).unwrap();
                                     }
