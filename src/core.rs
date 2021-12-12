@@ -100,7 +100,13 @@ impl BitMap {
     pub fn get(&self, key: String, offset: usize) -> u8 {
         let inner = self.inner();
 
-        let db = inner.values.get(&key).unwrap();
+        let data = inner.values.get(&key);
+        if let None = data {
+            println!("{:#?}","还没有数据呢!" );
+            return 0;
+        }
+
+        let db = data.unwrap();
         let index = self.get_index_by_offset(offset);
 
         if let Some(value) = db.get(index) {
