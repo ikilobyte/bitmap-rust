@@ -1,4 +1,4 @@
-use crate::client::Client;
+use crate::client::{Client, ClientStatus};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 // use std::thread::sleep;
@@ -12,6 +12,7 @@ pub struct BitMap {
 #[derive(Debug)]
 pub struct Inner {
     values: HashMap<String, Vec<u8>>,
+    socket_id: usize,
     clients: HashMap<usize, Client>,
 }
 
@@ -20,6 +21,7 @@ impl Inner {
         Self {
             values: HashMap::new(),
             clients: HashMap::new(),
+            socket_id: 0, // 下一个socket连接的ID
         }
     }
 }
@@ -102,7 +104,7 @@ impl BitMap {
 
         let data = inner.values.get(&key);
         if let None = data {
-            println!("{:#?}","还没有数据呢!" );
+            println!("{:#?}", "还没有数据呢!");
             return 0;
         }
 
@@ -119,6 +121,32 @@ impl BitMap {
         } else {
             0
         }
+    }
+
+    // 生成socket_id
+    pub fn make_socket_id(&self) -> usize {
+        let mut inner = self.inner();
+        inner.socket_id += 1;
+        inner.socket_id
+    }
+
+    // 追加client到列表中
+    pub fn push_client(&self, socket_id: usize, client: Client) {
+        let mut inner = self.inner();
+        inner.clients.insert(socket_id, client);
+        println!("{:#?}", inner.clients);
+    }
+
+    pub fn remove_client(&self, socket_id: usize) -> usize {
+        let mut inner = self.inner();
+
+        //
+        if let Some(client) = inner.clients.get(&socket_id) {
+            client.clone().set_status(ClientStatus::Offline);
+            inner.clients.remove(&socket_id);
+        }
+        // 返回长度
+        inner.clients.len()
     }
 }
 

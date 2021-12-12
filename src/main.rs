@@ -1,10 +1,8 @@
+use crate::client::Client;
 use crate::message::Message;
 use std::io::{Read, Write};
 use std::net::TcpListener;
-// use std::sync::{Arc, Mutex};
 use std::thread;
-// use std::thread::sleep;
-// use std::time::Duration;
 
 mod client;
 mod core;
@@ -22,7 +20,17 @@ fn main() {
         if let Ok(mut stream) = connect {
             let mut bitmap = bitmap.clone();
             thread::spawn(move || {
-                println!("new connect {:?}", stream.peer_addr().unwrap());
+                let socket_id = bitmap.make_socket_id();
+                let client = Client::new(socket_id);
+
+                // 保存连接信息
+                bitmap.push_client(socket_id, client.clone());
+
+                println!(
+                    "new connect {:?} socket_id {} ",
+                    stream.peer_addr().unwrap(),
+                    socket_id
+                );
                 stream.write("hello bitmap server\n".as_bytes()).unwrap();
                 let mut buffer = [0; 1];
                 let mut content = String::new();
@@ -30,6 +38,7 @@ fn main() {
                 loop {
                     match stream.read(&mut buffer) {
                         Ok(_) => {
+                            println!("{:#?}", buffer);
                             if buffer[0] == 0 {
                                 println!("client is close!");
                                 break;
@@ -38,6 +47,8 @@ fn main() {
                             // 读取完毕一个完整的包
                             if buffer[0] == 10 {
                                 let cmd = content.clone();
+                                // 重置一下
+                                buffer = [0; 1];
 
                                 // 清空
                                 content = "".to_string();
@@ -64,7 +75,6 @@ fn main() {
                                             .unwrap();
                                     }
                                     Message::Error(mut error) => {
-                                        println!("{:#?}",error );
                                         error.push_str("\n");
                                         stream.write(error.as_bytes()).unwrap();
                                     }
@@ -77,10 +87,15 @@ fn main() {
                             }
                         }
                         Err(e) => {
-                            println!("{:#?}", e);
+                            println!("Connection reset by peer {:#?}", e);
+                            break;
                         }
                     }
                 }
+
+                // 删除这个连接信息
+                let total = bitmap.remove_client(socket_id);
+                println!("当前连接ID {} 已退出 还有{}个连接", socket_id, total);
             });
         }
     }
