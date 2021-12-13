@@ -20,7 +20,7 @@ pub enum Message {
 
 impl Message {
     // 解析出是什么命令
-    pub fn parse(buffer: String) -> Self {
+    pub fn parse(buffer: &String) -> Self {
         let instruction: Vec<&str> = buffer.split_whitespace().collect();
 
         // 长度小于2的全部不处理
